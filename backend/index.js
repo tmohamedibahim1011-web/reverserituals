@@ -63,6 +63,26 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+const cron = require('node-cron');
+const Order = require('./models/Order');
+
+// Run daily at midnight to delete unpaid orders older than 1 month
+cron.schedule('0 0 * * *', async () => {
+  try {
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    
+    const result = await Order.deleteMany({
+      isPaid: false,
+      createdAt: { $lt: oneMonthAgo }
+    });
+    
+    console.log(`Cron job: Deleted ${result.deletedCount} unpaid orders older than 1 month.`);
+  } catch (error) {
+    console.error('Error deleting unpaid orders:', error);
+  }
+});
+
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => {

@@ -138,15 +138,18 @@ const OrderSuccessPage = () => {
                 <span className="font-bold text-[#c5a059] text-xl">₹{latestOrder.totalPrice}</span>
               </div>
               {latestOrder.estimatedDelivery && (
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-500">Expected Delivery</span>
-                  <span className="font-medium text-[#064e3b]">
-                    {new Date(latestOrder.estimatedDelivery).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric'
-                    })}
-                  </span>
+                <div className="flex flex-col gap-1 mt-4 border-t border-gray-100 pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500">Expected Delivery</span>
+                    <span className="font-medium text-[#064e3b]">
+                      {new Date(latestOrder.estimatedDelivery).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-400 italic text-left mt-2">Keep an eye on your phone, as your order may arrive sooner than expected date.</span>
                 </div>
               )}
             </div>

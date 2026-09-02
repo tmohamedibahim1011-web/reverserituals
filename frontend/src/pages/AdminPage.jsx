@@ -1323,9 +1323,12 @@ const AdminPage = () => {
                           <option value="Delivered">Delivered</option>
                         </select>
                         {order.estimatedDelivery && (order.status || 'Pending') !== 'Delivered' && (
-                          <span className="px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium">
-                            Est: {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                          </span>
+                          <div className="flex flex-col gap-1 items-end">
+                            <span className="px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium">
+                              Est: {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                            </span>
+                            <span className="text-[10px] text-gray-400 italic">Keep an eye on your phone, as your order may arrive sooner than expected date.</span>
+                          </div>
                         )}
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteOrder(order._id); }}

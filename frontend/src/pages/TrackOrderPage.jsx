@@ -261,15 +261,18 @@ const TrackOrderPage = () => {
                         </div>
 
                         {order.estimatedDelivery && status !== 'Delivered' && order.isPaid && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <span className="text-gray-500">Expected:</span>
-                            <span className="font-medium text-[#c5a059]">
-                              {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', {
-                                day: 'numeric',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </span>
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center gap-2 text-sm">
+                              <span className="text-gray-500">Expected:</span>
+                              <span className="font-medium text-[#c5a059]">
+                                {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', {
+                                  day: 'numeric',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                            <span className="text-xs text-gray-400 italic">Keep an eye on your phone, as your order may arrive sooner than expected date.</span>
                           </div>
                         )}
 

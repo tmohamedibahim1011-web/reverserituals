@@ -100,16 +100,21 @@ const OrdersPage = () => {
     order.orderItems.forEach(item => {
       const itemId = item.product;
       const existingItem = newItems.find(x => x._id === itemId);
+      const isReRitual = itemId === 're-ritual' || item.name?.toLowerCase().includes('re-ritual');
 
       if (existingItem) {
         existingItem.qty += item.qty || 1;
+        if (isReRitual && order.voiceReviewUrl && !existingItem.voiceReviewUrl) {
+          existingItem.voiceReviewUrl = order.voiceReviewUrl;
+        }
       } else {
         newItems.push({
           _id: itemId,
           name: item.name,
           price: item.price,
           image: item.image,
-          qty: item.qty || 1
+          qty: item.qty || 1,
+          ...(isReRitual && order.voiceReviewUrl ? { voiceReviewUrl: order.voiceReviewUrl } : {})
         });
       }
     });
@@ -125,13 +130,17 @@ const OrdersPage = () => {
       return;
     }
 
-    const newItems = order.orderItems.map(item => ({
-      _id: item.product,
-      name: item.name,
-      price: item.price,
-      image: item.image,
-      qty: item.qty || 1
-    }));
+    const newItems = order.orderItems.map(item => {
+      const isReRitual = item.product === 're-ritual' || item.name?.toLowerCase().includes('re-ritual');
+      return {
+        _id: item.product,
+        name: item.name,
+        price: item.price,
+        image: item.image,
+        qty: item.qty || 1,
+        ...(isReRitual && order.voiceReviewUrl ? { voiceReviewUrl: order.voiceReviewUrl } : {})
+      };
+    });
 
     localStorage.setItem('cartItems', JSON.stringify(newItems));
     localStorage.setItem('repay_order', order._id);

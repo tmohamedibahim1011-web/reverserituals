@@ -272,6 +272,10 @@ const CheckoutPage = () => {
 
   const loadRazorpay = () => {
     return new Promise((resolve) => {
+      if (window.Razorpay) {
+        resolve(true);
+        return;
+      }
       const script = document.createElement('script');
       script.src = 'https://checkout.razorpay.com/v1/checkout.js';
       script.onload = () => resolve(true);
@@ -410,7 +414,8 @@ const CheckoutPage = () => {
       });
       rzp.open();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Checkout failed');
+      console.error('Checkout error:', error);
+      toast.error(error.response?.data?.message || error.message || 'Checkout failed');
       setIsProcessing(false);
     }
   };

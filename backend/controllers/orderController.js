@@ -279,8 +279,14 @@ const verifyPayment = async (req, res) => {
     // ✅ 2. VERIFY WITH RAZORPAY API
     const payment = await razorpay.payments.fetch(razorpay_payment_id);
 
-    if (payment.status !== 'captured') {
-      return res.status(400).json({ message: 'Payment not captured' });
+    if (payment.status === 'authorized') {
+      try {
+        await razorpay.payments.capture(razorpay_payment_id, payment.amount, payment.currency);
+      } catch (err) {
+        console.log('Manual capture attempt failed or already captured:', err.message);
+      }
+    } else if (payment.status !== 'captured') {
+      return res.status(400).json({ message: `Payment not captured. Status: ${payment.status}` });
     }
 
     // ✅ 3. MARK PAID

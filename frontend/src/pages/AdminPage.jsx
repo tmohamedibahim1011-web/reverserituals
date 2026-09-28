@@ -57,6 +57,15 @@ const AdminPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [expandedOrder, setExpandedOrder] = useState(null);
 
@@ -704,13 +713,24 @@ const AdminPage = () => {
   const deliveredOrders = paidOrders.filter(o => o.isDelivered).length;
   const lowStockProducts = products.filter(p => p.countInStock < 5).length;
 
+  const processedOrders = React.useMemo(() => {
+    return orders.map(order => {
+      const combo = order.orderItems
+        ?.map(item => item.name ? item.name.trim() : '')
+        .filter(Boolean)
+        .sort()
+        .join(' & ') || '';
+      return { ...order, _productCombo: combo };
+    });
+  }, [orders]);
+
   const dateFilteredOrders = React.useMemo(() => {
-    return orders.filter(order => {
+    return processedOrders.filter(order => {
       const fullName = order.shippingAddress?.fullName || '';
       const orderIdStr = order.orderId || order._id || '';
       const matchesSearch =
-        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        orderIdStr.toLowerCase().includes(searchQuery.toLowerCase());
+        fullName.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+        orderIdStr.toLowerCase().includes(debouncedSearchQuery.toLowerCase());
 
       let matchesStatus = true;
       if (exportStatus === 'paid') matchesStatus = order.isPaid;
@@ -736,18 +756,11 @@ const AdminPage = () => {
 
       return matchesSearch && matchesStatus;
     });
-  }, [orders, searchQuery, exportStatus, exportDate, exportFromDate, exportToDate]);
+  }, [processedOrders, debouncedSearchQuery, exportStatus, exportDate, exportFromDate, exportToDate]);
 
   const uniqueCombos = React.useMemo(() => {
     return Array.from(new Set(
-      dateFilteredOrders.map(order => {
-        const combo = order.orderItems
-          ?.map(item => item.name ? item.name.trim() : '')
-          .filter(Boolean)
-          .sort()
-          .join(' & ');
-        return combo || '';
-      }).filter(Boolean)
+      dateFilteredOrders.map(order => order._productCombo).filter(Boolean)
     )).sort();
   }, [dateFilteredOrders]);
 
@@ -760,18 +773,13 @@ const AdminPage = () => {
   const filteredOrders = React.useMemo(() => {
     return dateFilteredOrders.filter(order => {
       if (!exportProductCombo) return true;
-      const orderCombo = order.orderItems
-        ?.map(item => item.name ? item.name.trim() : '')
-        .filter(Boolean)
-        .sort()
-        .join(' & ') || '';
-      return orderCombo === exportProductCombo;
+      return order._productCombo === exportProductCombo;
     });
   }, [dateFilteredOrders, exportProductCombo]);
 
   const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+    product.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+    product.category.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
   );
 
   const navItems = [
@@ -1327,7 +1335,6 @@ const AdminPage = () => {
                             <span className="px-2 py-1 bg-orange-100 text-orange-600 rounded-full text-xs font-medium">
                               Est: {new Date(order.estimatedDelivery).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                             </span>
-                            <span className="text-[10px] text-gray-400 italic">Keep an eye on your phone, as your order may arrive sooner than expected date.</span>
                           </div>
                         )}
                         <button
